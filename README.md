@@ -62,6 +62,18 @@ $env:ELECTRON_BUILDER_BINARIES_MIRROR = "https://npmmirror.com/mirrors/electron-
 
 `package.json` 里 `build.win.signAndEditExecutable: false` 是必需的：electron-builder 解压 `winCodeSign` 时要创建 macOS 符号链接，普通账户没有 `SeCreateSymbolicLinkPrivilege` 会直接失败。将来要做 exe 图标和代码签名，需以管理员身份或开启 Windows 开发者模式构建，并把这项改回 true。
 
+### 自动构建与发版
+
+`.github/workflows/release.yml` 在 `windows-latest` 上打包：推 `v*` 的 tag 就会自动构建并把 `release/*-portable.exe` 挂到对应的 GitHub Release。
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+`package.json` 的 `version` 要和 tag 对上（产物文件名带版本号）。不想动 tag 只想验证构建能否通过，就去 Actions 页面手动运行一次，产物在那个运行的 Artifacts 里下载。
+
+CI 和本地打出来的 exe 都没有代码签名，别人第一次运行时 Windows SmartScreen 会提示「未知发布者」，点「更多信息 → 仍要运行」即可；要消除提示只能买代码签名证书。
+
 运行时依赖只有 4 个：`jszip`、`fast-xml-parser`（epub）、`iconv-lite`、`jschardet`（txt 编码）。渲染层不使用任何前端框架，纯原生 DOM。
 
 ## 工程结构
