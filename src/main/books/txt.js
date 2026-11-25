@@ -100,22 +100,20 @@ function splitChapters(text, patterns) {
   return found;
 }
 
-/** 识别失败时按字数兜底切段，断点尽量落在空行处 */
 /** 识别不到章节时按字数兜底切段，断点尽量落在空行处 */
 function fallbackPages(text) {
   const total = text.length;
   const pages = [];
-  const count = Math.max(1, Math.ceil(total / FALLBACK_SEGMENT));
-  const step = Math.ceil(total / count);
   let pos = 0;
-  for (let i = 0; i < count; i += 1) {
-    const start = i === 0 ? 0 : pos;
-    let target = Math.min(total, start + step);
-    const nl = text.lastIndexOf('\n\n', target);
-    if (nl > start + step * 0.6) target = nl;
-    pages.push({ title: `第 ${i + 1} 段`, start, end: target });
+  // 按位置推进而不是按固定次数循环：每页断点都可能往前提，按次数会漏掉结尾
+  while (pos < total) {
+    let target = Math.min(total, pos + FALLBACK_SEGMENT);
+    if (target < total) {
+      const nl = text.lastIndexOf('\n\n', target);
+      if (nl > pos + FALLBACK_SEGMENT * 0.6) target = nl;
+    }
+    pages.push({ title: `第 ${pages.length + 1} 段`, start: pos, end: target });
     pos = target;
-    if (pos >= total) break;
   }
   return pages;
 }
@@ -123,15 +121,23 @@ function fallbackPages(text) {
 /** 把整本书切成渲染单元（页），每页自带字符区间 */
 function buildPages(text) {
   let marks = splitChapters(text, CHAPTER_PATTERNS);
-  if (marks.length < 2) {
+  if (!marks.length) {
     const numbered = splitChapters(text, [{ name: 'num', re: NUMBERED_RE }]);
     if (numbered.length >= 3) marks = numbered;
   }
 
-  if (!marks.length) {
-    return { pages: [{ title: '全文', start: 0, end: text.length }], strategy: 'single' };
+  // 只认出一个标题：多半是分章文件（标题就在开头），认它。
+  // 藏在正文深处的单个命中更像偶然句子，当噪声丢掉，免得在莫名其妙的地方断章。
+  if (marks.length === 1 && marks[0].lineStart > Math.max(1500, text.length * 0.05)) {
+    marks = [];
   }
-  if (marks.length < 2) {
+
+  if (!marks.length) {
+    // 没有任何可识别标题：常规长度整篇一页，别造"第 N 段"这种原文里没有的名字；
+    // 只有巨量无标题文本才切段，保证滚动与定位的性能。
+    if (text.length <= 200000) {
+      return { pages: [{ title: '全文', start: 0, end: text.length }], strategy: 'single' };
+    }
     return { pages: fallbackPages(text), strategy: 'fallback' };
   }
 

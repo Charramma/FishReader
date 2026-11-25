@@ -367,6 +367,13 @@ Fish.reader = (() => {
     return String(value).replace(/["\\]/g, '\\$&');
   }
 
+  /** 整体进度按实际滚动位置算，单页文件（分章 txt）也能连续变化 */
+  function scrollPercent() {
+    const max = scroller.scrollHeight - scroller.clientHeight;
+    if (max <= 0) return 100;
+    return Math.max(0, Math.min(100, Math.round((scroller.scrollTop / max) * 100)));
+  }
+
   function state() {
     if (!book) return { empty: true };
     const ch = chapterIndex();
@@ -376,7 +383,7 @@ Fish.reader = (() => {
       pageCount: book.pageCount,
       chapter: ch,
       chapterTitle: ch >= 0 ? book.chapters[ch].title : labelFor(current),
-      percent: Math.round(((current + 1) / book.pageCount) * 100),
+      percent: scrollPercent(),
       offset: (() => {
         const el = loaded.get(current);
         return el ? Math.max(0, Math.round(scroller.scrollTop - topOf(el))) : 0;
