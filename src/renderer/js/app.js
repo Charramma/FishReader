@@ -129,6 +129,17 @@
   /* ---------------- 悬停浮现 chrome ---------------- */
 
   let chromeTimer = null;
+  let lastPointerY = -1;
+
+  // 工具条和状态条只在鼠标移到它们各自那一条热区里时才浮现，
+  // 免得读正文时手一抖就把菜单栏晃出来。
+  const CHROME_PAD = 6;
+
+  function inChromeZone(y) {
+    const top = els.toolbar.offsetHeight + CHROME_PAD;
+    const bottom = window.innerHeight - els.statusbar.offsetHeight - CHROME_PAD;
+    return y <= top || y >= bottom;
+  }
 
   function showChrome() {
     document.body.classList.add('chrome-on');
@@ -144,8 +155,13 @@
   }
 
   function bindChrome() {
-    window.addEventListener('mousemove', showChrome);
-    window.addEventListener('focus', showChrome);
+    window.addEventListener('mousemove', (e) => {
+      lastPointerY = e.clientY;
+      if (inChromeZone(e.clientY)) showChrome();
+    });
+    window.addEventListener('focus', () => {
+      if (lastPointerY >= 0 && inChromeZone(lastPointerY)) showChrome();
+    });
     document.addEventListener('mouseleave', () => {
       if (chromeTimer) clearTimeout(chromeTimer);
       chromeTimer = setTimeout(hideChrome, 400);
