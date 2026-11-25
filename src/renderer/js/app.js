@@ -128,50 +128,32 @@
 
   /* ---------------- 悬停浮现 chrome ---------------- */
 
-  let chromeTimer = null;
   let lastPointerY = -1;
 
-  // 工具条和状态条只在鼠标移到它们各自那一条热区里时才浮现，
-  // 免得读正文时手一抖就把菜单栏晃出来。
-  const CHROME_PAD = 6;
+  // 工具条和状态条各自独立，显示与否只看指针此刻停在哪一条上：
+  // 停在上面就显示，移开就立刻消失，没有任何定时器会把它自己关掉。
+  const CHROME_PAD = 4;
 
-  function inChromeZone(y) {
-    const top = els.toolbar.offsetHeight + CHROME_PAD;
-    const bottom = window.innerHeight - els.statusbar.offsetHeight - CHROME_PAD;
-    return y <= top || y >= bottom;
-  }
-
-  function showChrome() {
-    document.body.classList.add('chrome-on');
-    if (chromeTimer) clearTimeout(chromeTimer);
-    chromeTimer = setTimeout(hideChrome, 1600);
-  }
-
-  function hideChrome() {
-    if (chromeTimer) clearTimeout(chromeTimer);
-    if (Fish.toc.isOpen()) return;
-    if (document.body.classList.contains('resizing')) return;
-    document.body.classList.remove('chrome-on');
+  function syncChrome() {
+    const resizing = document.body.classList.contains('resizing');
+    const topLimit = els.toolbar.offsetHeight + CHROME_PAD;
+    const bottomLimit = window.innerHeight - els.statusbar.offsetHeight - CHROME_PAD;
+    const inTop = !resizing && lastPointerY >= 0 && lastPointerY <= topLimit;
+    const inBottom = !resizing && lastPointerY >= bottomLimit;
+    document.body.classList.toggle('chrome-top', inTop);
+    document.body.classList.toggle('chrome-bottom', inBottom);
   }
 
   function bindChrome() {
     window.addEventListener('mousemove', (e) => {
       lastPointerY = e.clientY;
-      if (inChromeZone(e.clientY)) showChrome();
+      syncChrome();
     });
-    window.addEventListener('focus', () => {
-      if (lastPointerY >= 0 && inChromeZone(lastPointerY)) showChrome();
-    });
+    window.addEventListener('focus', syncChrome);
+    window.addEventListener('resize', syncChrome);
     document.addEventListener('mouseleave', () => {
-      if (chromeTimer) clearTimeout(chromeTimer);
-      chromeTimer = setTimeout(hideChrome, 400);
-    });
-    els.toolbar.addEventListener('mouseenter', () => {
-      if (chromeTimer) clearTimeout(chromeTimer);
-    });
-    els.toolbar.addEventListener('mouseleave', showChrome);
-    els.scroller.addEventListener('wheel', () => {
-      if (document.body.classList.contains('chrome-on')) showChrome();
+      lastPointerY = -1;
+      syncChrome();
     });
   }
 
@@ -431,7 +413,7 @@
         return null;
       })
       .then(() => {
-        showChrome();
+        syncChrome();
         if (!book) els.empty.hidden = false;
       })
       .catch((err) => {
