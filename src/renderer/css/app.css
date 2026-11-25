@@ -134,7 +134,8 @@ body {
   transition: opacity 140ms ease;
 }
 
-body.chrome-on .chrome {
+body.chrome-top .toolbar,
+body.chrome-bottom .statusbar {
   opacity: 1;
   pointer-events: auto;
 }
@@ -151,9 +152,15 @@ body.chrome-on .chrome {
   padding: 0 4px 0 8px;
   background: var(--chrome-bg);
   border-bottom: 1px solid var(--line);
+  /* 隐藏时不能当拖拽区，否则正文顶部那 30px 会变成"拖着窗口走"而不是选中文字 */
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+  z-index: 30;
+}
+
+body.chrome-top .toolbar {
   -webkit-app-region: drag;
   app-region: drag;
-  z-index: 30;
 }
 
 .tb-drag {
@@ -260,7 +267,9 @@ body.chrome-on .chrome {
 }
 
 .page {
-  margin-bottom: 1.6em;
+  /* 用 padding 而不是 margin：margin 会与容器边界塌陷，导致 offsetHeight 不等于它实际占的布局高度，
+     窗口化裁剪时占位空间和真实内容就对不上，滚动位置会漂移 */
+  padding-bottom: 1.6em;
 }
 
 .page-title {

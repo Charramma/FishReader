@@ -192,8 +192,9 @@ Fish.reader = (() => {
     heights.set(first, h);
     el.remove();
     loaded.delete(first);
+    // 占位区补上同样的高度，上方内容占据的总高度不变，所以 scrollTop 不用也不该动：
+    // 再减一次等于重复补偿，减掉整章高度会把 scrollTop 压到占位区以下，甚至夹到 0（表现为突然跳回第一行）
     phantomTop += h;
-    scroller.scrollTop = Math.max(0, scroller.scrollTop - h);
     first += 1;
     applyPhantoms();
     return true;
