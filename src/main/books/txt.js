@@ -12,9 +12,11 @@ const FALLBACK_SEGMENT = 2000;
 
 const CHAPTER_PATTERNS = [
   // 第一章 / 第 1 回 / 第三十二节
+  // "回" 排除紧跟的 "合"：像"第三回合又将会开始。"这种句子不是标题，第二章里的
+  // "第三回 合…"（带空格）不受影响
   {
     name: 'cn',
-    re: /^\s*第\s*[0-9０-９〇零一二三四五六七八九十百千万两]{1,12}\s*[章回节卷折篇幕]\s*(?:[\u4e00-\u9fa5A-Za-z0-9、，。：:·\-—_！？!?「」『』“”()\s]{0,30})\s*$/
+    re: /^\s*第\s*[0-9０-９〇零一二三四五六七八九十百千万两]{1,12}\s*(?:[章节卷折篇幕]|回(?!合))\s*(?:[\u4e00-\u9fa5A-Za-z0-9、，。：:·\-—_！？!?「」『』“”()\s]{0,30})\s*$/
   },
   // Chapter 1 / 正文 第十一章
   { name: 'en', re: /^\s*(?:chapter|part|section|canto)\s+[0-9ivxlcdmIVXLCDM]{1,10}\b.{0,40}$/i },
@@ -81,7 +83,7 @@ function decodeBuffer(buffer) {
 }
 
 /**
- * 按行扫描章节标题，返回 [{title, start}]，start 是该章正文（标题行之后）的字符偏移。
+ * 按行扫描章节标题，返回 [{title, lineStart, start, indented}]，start 是该章正文（标题行之后）的字符偏移。
  */
 function splitChapters(text, patterns) {
   const found = [];
@@ -92,7 +94,11 @@ function splitChapters(text, patterns) {
     if (trimmed && trimmed.length <= MAX_TITLE_LEN) {
       const hit = patterns.some((p) => p.re.test(trimmed));
       if (hit) {
-        found.push({ title: trimmed, lineStart: cursor, start: cursor + line.length + 1 });
+        found.push({
+          title: trimmed,
+          lineStart: cursor,
+          start: cursor + line.length + 1
+        });
       }
     }
     cursor += line.length + 1;
@@ -121,6 +127,15 @@ function fallbackPages(text) {
 /** 把整本书切成渲染单元（页），每页自带字符区间 */
 function buildPages(text) {
   let marks = splitChapters(text, CHAPTER_PATTERNS);
+
+  // 标题后面一个字都没有的命中不是章节：要么是正文里重复写了一遍标题，
+  // 要么是作者的话紧贴下一章标题（实测《神秘复苏》有 3 处）。
+  marks = marks.filter((m, i) => {
+    const next = marks[i + 1];
+    const bodyEnd = next ? next.lineStart : text.length;
+    return text.slice(m.start, bodyEnd).trim().length > 0;
+  });
+
   if (!marks.length) {
     const numbered = splitChapters(text, [{ name: 'num', re: NUMBERED_RE }]);
     if (numbered.length >= 3) marks = numbered;
