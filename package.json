@@ -1,6 +1,6 @@
 {
   "name": "fishreader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "上班摸鱼看小说的 PC 迷你阅读器",
   "private": true,
   "main": "src/main/main.js",
