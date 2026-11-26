@@ -74,6 +74,8 @@ module.exports = function registerIpc({ config, reader, registerHotkey, isHotkey
 
   ipcMain.handle('win:resize-start', (_event, edge) => reader.startResize(String(edge || '')));
   ipcMain.handle('win:resize-stop', () => reader.stopResize());
+  ipcMain.handle('win:drag-start', () => reader.startDrag());
+  ipcMain.handle('win:drag-stop', () => reader.stopDrag());
   ipcMain.handle('win:always-on-top', (_event, flag) => reader.setAlwaysOnTop(flag));
   ipcMain.handle('win:opacity', (_event, value) => reader.setOpacity(value));
   ipcMain.handle('win:toggle-visible', () => reader.toggleVisibility());

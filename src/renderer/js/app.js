@@ -157,6 +157,33 @@
     });
   }
 
+  /* ---------------- 拖动窗口 ---------------- */
+
+  // 工具条空白处按下即可拖窗口。这里不用 CSS 的 app-region: drag：
+  // 那会让工具条变成系统标题栏，鼠标停在上面时网页收不到 mousemove，
+  // 悬停显示/隐藏就会来回抖，光标也会变回正文的 I 形。
+  function bindDrag() {
+    els.toolbar.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || e.target.closest('.tb-btn')) return;
+      e.preventDefault();
+      try {
+        els.toolbar.setPointerCapture(e.pointerId);
+      } catch {
+        /* 拿不到 capture 时靠 pointerup 兜底 */
+      }
+      document.body.classList.add('dragging');
+      window.fish.dragStart();
+    });
+    const stop = () => {
+      if (!document.body.classList.contains('dragging')) return;
+      document.body.classList.remove('dragging');
+      window.fish.dragStop();
+    };
+    window.addEventListener('pointerup', stop);
+    window.addEventListener('pointercancel', stop);
+    window.addEventListener('blur', stop);
+  }
+
   /* ---------------- 窗口缩放 ---------------- */
 
   function bindResize() {
@@ -381,6 +408,7 @@
     Fish.reader.onUpdater = onReaderUpdate;
     bindToolbar();
     bindChrome();
+    bindDrag();
     bindResize();
     bindHotkeys();
     bindDrop();

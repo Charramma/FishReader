@@ -41,6 +41,7 @@ class ReaderWindow {
     this.config = config;
     this.win = null;
     this.resizeTimer = null;
+    this.dragTimer = null;
     this.moveTimer = null;
   }
 
@@ -142,6 +143,34 @@ class ReaderWindow {
     };
     if (immediate) write();
     else this.moveTimer = setTimeout(write, 300);
+  }
+
+  /**
+   * 拖动窗口。不用 CSS 的 app-region: drag —— 那会把工具条变成系统标题栏，
+   * 鼠标在上面收不到 mousemove，悬停显示/隐藏就会来回抖。
+   * 这里和缩放一样轮询光标位置，网页事件保持完整。
+   */
+  startDrag() {
+    this.stopDrag();
+    if (!this.win) return;
+    const origin = screen.getCursorScreenPoint();
+    const start = this.win.getBounds();
+    let last = { x: start.x, y: start.y };
+
+    this.dragTimer = setInterval(() => {
+      const cur = screen.getCursorScreenPoint();
+      const next = { x: start.x + (cur.x - origin.x), y: start.y + (cur.y - origin.y) };
+      if (next.x === last.x && next.y === last.y) return;
+      last = next;
+      this.win.setPosition(next.x, next.y);
+    }, RESIZE_INTERVAL);
+  }
+
+  stopDrag() {
+    if (this.dragTimer) {
+      clearInterval(this.dragTimer);
+      this.dragTimer = null;
+    }
   }
 
   startResize(edge) {

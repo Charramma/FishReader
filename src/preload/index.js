@@ -20,6 +20,8 @@ const api = {
 
   resizeStart: (edge) => ipcRenderer.invoke('win:resize-start', edge),
   resizeStop: () => ipcRenderer.invoke('win:resize-stop'),
+  dragStart: () => ipcRenderer.invoke('win:drag-start'),
+  dragStop: () => ipcRenderer.invoke('win:drag-stop'),
   setAlwaysOnTop: (flag) => ipcRenderer.invoke('win:always-on-top', flag),
   setOpacity: (value) => ipcRenderer.invoke('win:opacity', value),
   toggleVisible: () => ipcRenderer.invoke('win:toggle-visible'),
