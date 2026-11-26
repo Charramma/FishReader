@@ -2,7 +2,7 @@
 
 上班摸鱼用的 PC 端超小小说阅读器。无边框小窗常驻屏幕右下角，黑底灰白字，滚轮阅读，自动生成目录。
 
-当前版本：0.1.2 ｜ 平台：Windows ｜ 运行时：Electron 33
+当前版本：0.1.3 ｜ 平台：Windows ｜ 运行时：Electron 33
 
 ## 功能
 
@@ -39,7 +39,7 @@
 
 ## 使用
 
-- **免安装单文件**：`release/FishReader-0.1.0-portable.exe`，双击即用。首次启动需解包到临时目录，会慢 1–2 秒；想要秒开就用 `release/win-unpacked/FishReader.exe`（文件夹版）。
+- **免安装单文件**：`release/FishReader-0.1.3-portable.exe`，双击即用。首次启动需解包到临时目录，会慢 1–2 秒；想要秒开就用 `release/win-unpacked/FishReader.exe`（文件夹版）。
 - 打开书：点工具条上的文件夹图标，或直接把 `.txt` / `.epub` 拖进窗口。
 - 也可以在资源管理器里右键 → 打开方式 → 选 FishReader（免安装版不会自动注册文件关联）。
 - 退出：点工具条最右的「关」，或 `Ctrl+Q`。窗口隐藏后除老板键外没有别的入口，忘了键就再启动一次程序——单实例机制会把已隐藏的窗口直接唤回。
