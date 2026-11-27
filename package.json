@@ -31,10 +31,11 @@
       "package.json"
     ],
     "win": {
+      "icon": "src/assets/icon.ico",
       "target": [
         "portable"
       ],
-      "signAndEditExecutable": false
+      "signAndEditExecutable": true
     },
     "portable": {
       "artifactName": "FishReader-${version}-portable.${ext}"

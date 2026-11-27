@@ -43,7 +43,7 @@
 - 打开书：点工具条上的文件夹图标，或直接把 `.txt` / `.epub` 拖进窗口。
 - 也可以在资源管理器里右键 → 打开方式 → 选 FishReader（免安装版不会自动注册文件关联）。
 - 退出：点工具条最右的「关」，或 `Ctrl+Q`。窗口隐藏后除老板键外没有别的入口，忘了键就再启动一次程序——单实例机制会把已隐藏的窗口直接唤回。
-- 配置与进度：`%APPDATA%\FishReader\config.json`。想彻底重置，删掉这个文件即可。
+- 配置与进度：`%APPDATA%\fishreader\config.json`（目录名取自 `package.json` 的 `name`，是小写）。想彻底重置，删掉这个文件即可。
 
 ## 开发
 
@@ -60,7 +60,7 @@ $env:ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/"
 $env:ELECTRON_BUILDER_BINARIES_MIRROR = "https://npmmirror.com/mirrors/electron-builder-binaries/"
 ```
 
-`package.json` 里 `build.win.signAndEditExecutable: false` 是必需的：electron-builder 解压 `winCodeSign` 时要创建 macOS 符号链接，普通账户没有 `SeCreateSymbolicLinkPrivilege` 会直接失败。将来要做 exe 图标和代码签名，需以管理员身份或开启 Windows 开发者模式构建，并把这项改回 true。
+`package.json` 里 `build.win.signAndEditExecutable: true`：exe 的图标和版本信息要靠 `winCodeSign` 里的 `rcedit` 写进 PE 资源，而解压 `winCodeSign` 时需要创建 macOS 符号链接，普通账户没有 `SeCreateSymbolicLinkPrivilege`，会报「客户端没有所需的特权」甚至卡住。启用 Windows 开发者模式（设置 → 更新和安全 → 开发者选项），或者用管理员账户构建即可；不想要 exe 图标就改回 `false`，跳过这一步。
 
 ### 自动构建与发版
 
@@ -89,6 +89,7 @@ src/
 │   └── books/
 │       ├── txt.js       编码探测、章节正则、兜底分段
 │       └── epub.js      container → OPF → spine，nav/NCX 目录，zip 内资源读取
+├── assets/icon.ico      应用图标（16–256 共 9 档）与 icon.png
 ├── preload/index.js     contextBridge 暴露 window.fish（无 nodeIntegration）
 └── renderer/
     ├── index.html

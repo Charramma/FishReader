@@ -59,6 +59,7 @@ class ReaderWindow {
       movable: true,
       hasShadow: true,
       backgroundColor: this.config.get('theme') === 'light' ? '#fafafa' : '#141414',
+      icon: path.join(__dirname, '..', 'assets', 'icon.ico'),
       show: false,
       webPreferences: {
         preload: path.join(__dirname, '..', 'preload', 'index.js'),
